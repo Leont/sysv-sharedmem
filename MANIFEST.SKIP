@@ -1,0 +1,13 @@
+^_build
+^Build$
+^blib
+~$
+\.bak$
+^MANIFEST\.SKIP$
+\.swp
+\.tdy
+\.tar\.gz
+SysV-SharedMem-.*
+^\.git
+^lib/.*\.c$
+^lib/.*\.o$
