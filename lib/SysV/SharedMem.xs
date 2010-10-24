@@ -197,6 +197,8 @@ static struct svsh_info* get_svsh_magic(pTHX_ SV* var, const char* funcname) {
 	return (struct svsh_info*) magic->mg_ptr;
 }
 
+#define SET_HASH(key, value) hv_store(hash, key, sizeof key - 1, newSViv(value), 0)
+
 MODULE = SysV::SharedMem				PACKAGE = SysV::SharedMem
 
 PROTOTYPES: DISABLED
@@ -217,6 +219,37 @@ _shmat(var, shmid, offset, length, flags)
 		struct svsh_info* magical = initialize_svsh_info(shmid, address, length, correction);
 		reset_var(var, magical);
 		add_magic(aTHX_ var, magical, 1);
+
+SV*
+shared_stat(var)
+	SV* var;
+	PREINIT:
+		int shmid;
+		struct shmid_ds buffer;
+		HV* hash;
+	CODE:
+		shmid = get_svsh_magic(aTHX_ var, "shared_stat")->shmid;
+		shmctl(shmid, IPC_STAT, &buffer);
+		
+		hash = newHV();
+		
+		SET_HASH("uid", buffer.shm_perm.uid);
+		SET_HASH("gid", buffer.shm_perm.gid);
+		SET_HASH("cuid", buffer.shm_perm.cuid);
+		SET_HASH("cgid", buffer.shm_perm.cgid);
+		SET_HASH("mode", buffer.shm_perm.mode);
+
+		SET_HASH("segsz", buffer.shm_segsz);
+		SET_HASH("lpid", buffer.shm_lpid);
+		SET_HASH("cpid", buffer.shm_cpid);
+		SET_HASH("nattch", buffer.shm_nattch);
+		SET_HASH("atime", buffer.shm_atime);
+		SET_HASH("dtime", buffer.shm_dtime);
+		SET_HASH("ctime", buffer.shm_ctime);
+
+		RETVAL = newRV_noinc((SV*)hash);
+	OUTPUT:
+		RETVAL
 
 int
 _get_id(var, name)

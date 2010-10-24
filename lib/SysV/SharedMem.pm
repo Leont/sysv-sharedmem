@@ -48,13 +48,6 @@ sub shared_remove {
 	return;
 }
 
-sub shared_stat {
-	my $id = _get_id($_[0], 'shared_stat');
-	my $data = '';
-	shmctl $id, IPC_STAT, $data or croak "Couldn't stat shared memory segment: $!";
-	return $data;
-}
-
 sub shared_chmod {
 	croak 'unimplemented';
 }
@@ -114,6 +107,60 @@ The project id, used to ensure the key generated from the filename is unique. On
 Marks a memory object to be removed. Shared memory has kernel persisence so it has to be explicitly disposed of. One can still use the object after marking it for removal.
 
 =head2 shared_stat($var)
+
+Retrieve the properties of the shared memory object. It returns a hashref with these members:
+
+=over 2
+
+=item * uid
+
+Owner's user ID
+
+=item * gid
+
+Owner's group ID
+
+=item * cuid
+
+Creator's user ID
+
+=item * cgid
+
+Creator's group ID
+
+=item * mode
+
+Read/write permission
+
+=item * segsz
+
+Size of segment in bytes
+
+=item * lpid
+
+Process ID of last shared memory operation
+
+=item * cpid
+
+Process ID of creator
+
+=item * nattch
+
+Number of current attaches
+
+=item * atime
+
+Time of last attachment
+
+=item * dtime
+
+Time of last detachment
+
+=item * ctime
+
+Time of last of control structure
+
+=back
 
 =head2 shared_chmod($var, $modebits)
 
