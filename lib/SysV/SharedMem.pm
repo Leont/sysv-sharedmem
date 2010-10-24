@@ -6,9 +6,8 @@ use warnings FATAL => 'all';
 
 use Carp qw/croak/;
 use Const::Fast;
-use Fcntl qw/O_RDONLY O_WRONLY O_RDWR O_CREAT/;
 use IPC::SysV qw/ftok IPC_STAT IPC_RMID IPC_PRIVATE IPC_CREAT/;
-use Sub::Exporter -setup => { exports => [qw/shared_open shared_remove shared_stat shared_chmod/] };
+use Sub::Exporter -setup => { exports => [qw/shared_open shared_remove shared_stat shared_chmod shared_chown/] };
 
 use XSLoader;
 
@@ -16,10 +15,10 @@ our $VERSION = '0.001';
 XSLoader::load(__PACKAGE__, $VERSION);
 
 my %flags_for = (
-	'<'  => O_RDONLY,
-	'+<' => O_RDWR,
-	'>'  => O_WRONLY,
-	'+>' => O_RDWR | IPC_CREAT,
+	'<'  => 0,
+	'+<' => 0,
+	'>'  => 0,
+	'+>' => 0 | IPC_CREAT,
 );
 
 ## no critic (RequireArgUnpacking)
@@ -46,10 +45,6 @@ sub shared_remove {
 	my $id = _get_id($_[0], 'shared_remove');
 	shmctl $id, IPC_RMID, 0;
 	return;
-}
-
-sub shared_chmod {
-	croak 'unimplemented';
 }
 
 1;    # End of SysV::SharedMem
@@ -164,7 +159,11 @@ Time of last of control structure
 
 =head2 shared_chmod($var, $modebits)
 
+Change the (lower 9) modebits of the shared memory object.
+
 =head2 shared_chown($var, $uid, $gid = undef)
+
+Change the owning uid and optionally gid of the shared memory object.
 
 =head1 AUTHOR
 

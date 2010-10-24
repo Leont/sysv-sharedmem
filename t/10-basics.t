@@ -2,8 +2,8 @@
 
 use strict;
 use warnings;
-use SysV::SharedMem qw/shared_open shared_remove shared_stat/;
-use Test::More tests => 6;
+use SysV::SharedMem qw/shared_open shared_remove shared_stat shared_chmod/;
+use Test::More tests => 9;
 use Test::Exception;
 
 my $map;
@@ -19,6 +19,12 @@ my $stat;
 lives_ok { $stat = shared_stat($map) } 'Can stat shared memory';
 
 is $stat->{uid}, $<, 'uid matches process\' uid';
+
+is $stat->{mode} & 0777, 0700, 'Owner can read, write and execute';
+
+lives_ok { shared_chmod $map, 0600 } 'Can chmod shared memory';
+
+is shared_stat($map)->{mode} & 0777, 0600;
 
 lives_ok { shared_remove $map } "Can unlink '/name'"
 

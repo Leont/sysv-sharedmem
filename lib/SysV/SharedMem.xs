@@ -199,6 +199,14 @@ static struct svsh_info* get_svsh_magic(pTHX_ SV* var, const char* funcname) {
 
 #define SET_HASH(key, value) hv_store(hash, key, sizeof key - 1, newSViv(value), 0)
 
+void _my_shmctl(pTHX_ int id, int op, struct shmid_ds* buffer, const char* format) {
+	int ret = shmctl(id, op, buffer);
+	if (ret != 0)
+		croak_sys(aTHX_ format);
+}
+
+#define my_shmctl(id, op, buffer, format) _my_shmctl(aTHX_ id, op, buffer, format)
+
 MODULE = SysV::SharedMem				PACKAGE = SysV::SharedMem
 
 PROTOTYPES: DISABLED
@@ -229,7 +237,7 @@ shared_stat(var)
 		HV* hash;
 	CODE:
 		shmid = get_svsh_magic(aTHX_ var, "shared_stat")->shmid;
-		shmctl(shmid, IPC_STAT, &buffer);
+		my_shmctl(shmid, IPC_STAT, &buffer, "Could not shared_stat: %s");
 		
 		hash = newHV();
 		
@@ -250,6 +258,35 @@ shared_stat(var)
 		RETVAL = newRV_noinc((SV*)hash);
 	OUTPUT:
 		RETVAL
+
+void
+shared_chown(var, uid, gid = &PL_sv_undef)
+	SV* var;
+	IV uid;
+	SV* gid;
+	PREINIT:
+	int shmid;
+	struct shmid_ds buffer;
+	CODE:
+		shmid = get_svsh_magic(aTHX_ var, "shared_chown")->shmid;
+		my_shmctl(shmid, IPC_STAT, &buffer, "Could not shared_chown: %s");
+		buffer.shm_perm.uid = uid;
+		if (SvOK(gid))
+			buffer.shm_perm.gid = SvIV(gid);
+		my_shmctl(shmid, IPC_SET, &buffer, "Could not shared_chown: %s");
+
+void
+shared_chmod(var, mode)
+	SV* var;
+	int mode;
+	PREINIT:
+	int shmid;
+	struct shmid_ds buffer;
+	CODE:
+		shmid = get_svsh_magic(aTHX_ var, "shared_chmod")->shmid;
+		my_shmctl(shmid, IPC_STAT, &buffer, "Could not shared_chmod: %s");
+		buffer.shm_perm.mode = mode & 0777;
+		my_shmctl(shmid, IPC_SET, &buffer, "Could not shared_chmod: %s");
 
 int
 _get_id(var, name)
