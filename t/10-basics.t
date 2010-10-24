@@ -28,4 +28,3 @@ is shared_stat($map)->{mode} & 0777, 0600;
 
 lives_ok { shared_remove $map } "Can unlink '/name'"
 
-

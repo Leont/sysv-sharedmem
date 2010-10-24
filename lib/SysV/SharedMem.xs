@@ -288,11 +288,11 @@ shared_chmod(var, mode)
 		buffer.shm_perm.mode = mode & 0777;
 		my_shmctl(shmid, IPC_SET, &buffer, "Could not shared_chmod: %s");
 
-int
-_get_id(var, name)
+void
+shared_remove(var)
 	SV* var;
-	const char* name;
+	PREINIT:
+	int shmid;
 	CODE:
-		RETVAL = get_svsh_magic(aTHX_ var, name)->shmid;
-	OUTPUT:
-		RETVAL
+		shmid = get_svsh_magic(aTHX_ var, "shared_remove")->shmid;
+		my_shmctl(shmid, IPC_RMID, NULL, "Could not shared_remove: %s");

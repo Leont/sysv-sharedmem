@@ -41,12 +41,6 @@ sub shared_open {
 	return;
 }
 
-sub shared_remove {
-	my $id = _get_id($_[0], 'shared_remove');
-	shmctl $id, IPC_RMID, 0;
-	return;
-}
-
 1;    # End of SysV::SharedMem
 
 __END__
