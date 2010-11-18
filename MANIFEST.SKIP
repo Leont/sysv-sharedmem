@@ -11,3 +11,4 @@ SysV-SharedMem-.*
 ^\.git
 ^lib/.*\.c$
 ^lib/.*\.o$
+^MYMETA.yml$

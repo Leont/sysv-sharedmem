@@ -2,6 +2,7 @@ Build.PL
 Changes
 lib/SysV/SharedMem.pm
 lib/SysV/SharedMem.xs
+LICENSE
 Makefile.PL
 MANIFEST
 META.yml
