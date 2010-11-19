@@ -14,7 +14,7 @@ use XSLoader;
 our $VERSION = '0.001';
 XSLoader::load(__PACKAGE__, $VERSION);
 
-my %flags_for = (
+const my %flags_for => (
 	'<'  => 0,
 	'+<' => 0,
 	'>'  => 0,
@@ -24,18 +24,19 @@ my %flags_for = (
 ## no critic (RequireArgUnpacking)
 
 sub shared_open {
-	my (undef, $name, $mode, %other) = @_;
+	my (undef, $filename, $mode, %other) = @_;
 	my %options = (
 		offset => 0,
 		id     => 1,
 		perms  => oct 700,
+		key    => IPC_PRIVATE,
 		%other,
 	);
 	$mode = '<' if not defined $mode;
-	croak 'No such mode' if not defined $flags_for{$mode};
-	my $key = defined $name ? ftok($name, $options{id}) : IPC_PRIVATE;
+	croak 'No such mode' if not exists $flags_for{$mode};
+	my $key = defined $filename ? ftok($filename, $options{id}) : $options{key};
 	my $id = shmget $key, $options{size}, $flags_for{$mode} | $options{perms};
-	croak "Can't open shared memory object $name: $!" if not defined $id;
+	croak "Can't open shared memory object $filename: $!" if not defined $id;
 
 	_shmat($_[0], $id, @options{qw/offset size/}, 0);
 	return;
@@ -65,9 +66,9 @@ This module maps shared memory into a variable that can be read just like any ot
 
 =head1 METHODS
 
-=head2 shared_open($var, $name, $mode, %options)
+=head2 shared_open($var, $filename, $mode, %options)
 
-Open a shared memory object named C<$name> and attach it to C<$var>. $name must be the path to an existing file or undef, in which case an anonymous object is created. C<$mode> determines the read/write mode. It works the same as in open.
+Open a shared memory object named C<$filename> and attach it to C<$var>. $filename must be the path to an existing file or undef, in which case the C<key> option is used. C<$mode> determines the read/write mode. It works the same as in open.
 
 Beyond that it can take a number of optional named arguments:
 
@@ -84,6 +85,10 @@ This determines the permissions with which the file is created (if $mode is '+>'
 =item * offset
 
 This determines the offset in the file that is mapped. Default is 0.
+
+=item * key
+
+If C<$filename> is undefined this parameter is used as the key to lookup the shared memory segment. It defaults to IPC_PRIVATE, which causes a new, anonymous shared memory segment to be created.
 
 =item * id
 
