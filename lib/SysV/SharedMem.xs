@@ -1,3 +1,5 @@
+#include <sys/types.h>
+#include <sys/ipc.h>
 #include <sys/shm.h>
 
 #define PERL_NO_GET_CONTEXT
