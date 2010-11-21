@@ -1,3 +1,10 @@
+#if defined linux
+#	ifndef _GNU_SOURCE
+#		define _GNU_SOURCE
+#	endif
+#	define GNU_STRERROR_R
+#endif
+
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -35,6 +42,16 @@ static size_t page_size() {
 		pagesize = sysconf(_SC_PAGESIZE);
 	}
 	return pagesize;
+}
+
+static void get_sys_error(char* buffer, size_t buffer_size) {
+#ifdef GNU_STRERROR_R
+	const char* message = strerror_r(errno, buffer, buffer_size);
+	if (message != buffer)
+		memcpy(buffer, message, buffer_size);
+#else
+	strerror_r(errno, buffer, buffer_size);
+#endif
 }
 
 static void real_croak_sv(pTHX_ SV* value) {
@@ -117,6 +134,7 @@ static int svsh_free(pTHX_ SV* var, MAGIC* magic) {
 	SvREADONLY_off(var);
 	SvPVX(var) = NULL;
 	SvCUR(var) = 0;
+	SvOK_off(var);
 	return 0;
 }
 
