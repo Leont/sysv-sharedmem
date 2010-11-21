@@ -1,5 +1,10 @@
 Revision history for SysV-SharedMem
 
+0.002   2010-11-21
+        Added key option
+        Included extra headers for OpenBSD compatibility
+        Made get_sys_error more robust on Linux
+
 0.001   2010-10-24
         First version, released on an unsuspecting world.
 
