@@ -54,6 +54,12 @@ static void get_sys_error(char* buffer, size_t buffer_size) {
 #endif
 }
 
+static void die_sys(pTHX_ const char* format) {
+	char buffer[128];
+	get_sys_error(buffer, sizeof buffer);
+	Perl_croak(aTHX_ format, buffer);
+}
+
 static void real_croak_sv(pTHX_ SV* value) {
 	dSP;
 	PUSHMARK(SP);
