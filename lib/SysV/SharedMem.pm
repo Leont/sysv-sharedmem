@@ -11,7 +11,7 @@ use Sub::Exporter -setup => { exports => [qw/shared_open shared_remove shared_st
 
 use XSLoader;
 
-our $VERSION = '0.002';
+our $VERSION = '0.003';
 XSLoader::load(__PACKAGE__, $VERSION);
 
 const my %flags_for => (
@@ -53,7 +53,7 @@ SysV::SharedMem - SysV Shared memory made easy
 
 =head1 VERSION
 
-Version 0.002
+Version 0.003
 
 =head1 SYNOPSIS
 
