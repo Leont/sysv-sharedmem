@@ -4,14 +4,14 @@ use strict;
 use warnings;
 
 use SysV::SharedMem qw/shared_open shared_remove/;
-use Test::More tests => 18;
+use Test::More tests => 19;
 use Test::Warn;
 use Test::Exception;
 use Test::NoWarnings;
 
-sub map_file(\$@) {
-	my ($ref, $name, $mode) = @_;
-	shared_open($$ref, $name, $mode);
+sub map_named(\$@) {
+	my ($ref, $name, $mode, $size) = @_;
+	shared_open($$ref, $name, $mode, size => $size);
 	shared_remove($$ref);
 	return;
 }
@@ -44,7 +44,9 @@ is($mmaped, scalar reverse($slurped), '$mmap is reversed');
 
 warning_is { $mmaped = $mmaped } undef, 'No warnings on self-assignment';
 
-dies_ok { map_file my $var, 'some-nonexistant-file' } 'Can\'t map non-existant files as readonly';
+throws_ok { map_named my $var, 'some-nonexistant-file', '<', 1024 } qr/Invalid key: No such file or directory at /, 'Can\'t map wth non-existant file as a key';
+
+throws_ok { map_named my $var, $0, '<', 1024 } qr/Can't open shared memory object '[\w\/.-]+': No such file or directory/, 'Can\'t map wth non-existant file as a key';
 
 warnings_like { $mmaped =~ s/(.)/$1$1/ } [ qr/^Writing directly to shared memory is not recommended at /, qr/^Truncating new value to size of the shared memory segment at /], 'Trying to make it longer gives warnings';
 
