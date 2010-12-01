@@ -15,6 +15,8 @@ my $builder = Module::Build->new(
 		'ExtUtils::CBuilder' => 0,
 		'Module::Build' => 0.28,
 		'Test::More'    => 0,
+		'Test::Warn'    => 0,
+		'Test::NoWarnings' => 0,
 	},
 	requires            => {
 		perl            => 5.008,
