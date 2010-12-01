@@ -3,8 +3,9 @@
 use strict;
 use warnings;
 use SysV::SharedMem qw/shared_open shared_remove shared_stat shared_chmod/;
-use Test::More tests => 9;
+use Test::More tests => 10;
 use Test::Exception;
+use Test::NoWarnings;
 
 my $map;
 lives_ok { shared_open $map, $0, '+>', size => 300, id => 2 } "can open file '/name'";

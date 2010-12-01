@@ -1,6 +1,7 @@
 #!perl -T
 
-use Test::More tests => 1;
+use Test::NoWarnings;
+use Test::More tests => 2;
 
 BEGIN {
     use_ok( 'SysV::SharedMem' ) || print "Bail out!
