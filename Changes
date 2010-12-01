@@ -1,5 +1,10 @@
 Revision history for SysV-SharedMem
 
+0.004   2010-12-01
+        Give clearer errors on incorrect files and sizes
+        Fixed Build-time dependencies
+        Added Test::NoWarnings to test files
+
 0.003   2010-11-29
         Added missing die_sys function
         Added unit tests for various error conditions
