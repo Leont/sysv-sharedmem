@@ -1,5 +1,8 @@
 Revision history for SysV-SharedMem
 
+0.005   2011-01-12
+        Fall back on strerror if necessary
+
 0.004   2010-12-01
         Give clearer errors on incorrect files and sizes
         Fixed Build-time dependencies
