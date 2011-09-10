@@ -317,7 +317,7 @@ shared_chmod(var, mode)
 	CODE:
 		shmid = get_svsh_magic(aTHX_ var, "shared_chmod")->shmid;
 		my_shmctl(shmid, IPC_STAT, &buffer, "Could not shared_chmod: %s");
-		buffer.shm_perm.mode = mode & 0777;
+		buffer.shm_perm.mode = (buffer.shm_perm.mode & ~0777) | (mode & 0777);
 		my_shmctl(shmid, IPC_SET, &buffer, "Could not shared_chmod: %s");
 
 void

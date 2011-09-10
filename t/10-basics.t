@@ -19,9 +19,9 @@ lives_ok { shared_open $map, $0, '+>', size => 300, id => 2 } "can open file '/n
 my $stat;
 lives_ok { $stat = shared_stat($map) } 'Can stat shared memory';
 
-is $stat->{uid}, $<, 'uid matches process\' uid';
+is $stat->{uid}, $>, 'uid matches process\' uid';
 
-is $stat->{mode} & 0777, 0700, 'Owner can read, write and execute';
+is $stat->{mode} & 0777, 0600, 'Owner can read and write';
 
 lives_ok { shared_chmod $map, 0600 } 'Can chmod shared memory';
 

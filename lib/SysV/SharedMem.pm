@@ -16,7 +16,7 @@ XSLoader::load(__PACKAGE__, __PACKAGE__->VERSION);
 const my %flags_for => (
 	'<'  => SHM_RDONLY,
 	'+<' => 0,
-	'>'  => 0,
+	'>'  => 0 | IPC_CREAT,
 	'+>' => 0 | IPC_CREAT,
 );
 
@@ -27,7 +27,7 @@ sub shared_open {
 	my %options = (
 		offset => 0,
 		id     => 1,
-		perms  => oct 700,
+		perms  => oct 600,
 		key    => IPC_PRIVATE,
 		size   => 0,
 		%other,
@@ -74,7 +74,7 @@ This determines the size of the map. Must be set if a new shared memory object i
 
 =item * perms
 
-This determines the permissions with which the file is created (if $mode is '+>'). Default is 0700.
+This determines the permissions with which the segment is created (if $mode is '>' or '+>'). Default is 0600.
 
 =item * offset
 

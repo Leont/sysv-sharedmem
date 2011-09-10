@@ -1,6 +1,7 @@
 Revision history for SysV-SharedMem
 
 {{$NEXT}}
+          Fixed creation mode and permissions
           Converted to Dist::Zilla
 
 0.005   2011-01-12
