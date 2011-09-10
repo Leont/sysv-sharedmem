@@ -1,5 +1,8 @@
 Revision history for SysV-SharedMem
 
+{{$NEXT}}
+          Converted to Dist::Zilla
+
 0.005   2011-01-12
         Fall back on strerror if necessary
 
