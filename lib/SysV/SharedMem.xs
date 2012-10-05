@@ -176,16 +176,18 @@ static const MGVTBL svsh_table  = { 0, svsh_write,  0, svsh_clear, svsh_free,  0
 static void check_new_variable(pTHX_ SV* var) {
 	if (SvTYPE(var) > SVt_PVMG && SvTYPE(var) != SVt_PVLV)
 		Perl_croak(aTHX_ "Trying to attach to a nonscalar!\n");
+	SV_CHECK_THINKFIRST(var);
 	if (SvREADONLY(var))
-		Perl_croak(aTHX_ PL_no_modify);
+		Perl_croak(aTHX_ "%s", PL_no_modify);
 	if (SvMAGICAL(var) && mg_find(var, PERL_MAGIC_uvar))
 		sv_unmagic(var, PERL_MAGIC_uvar);
 	if (SvROK(var))
 		sv_unref_flags(var, SV_IMMEDIATE_UNREF);
+	if (SvNIOK(var))
+		SvNIOK_off(var);
 	if (SvPOK(var)) 
 		SvPV_free(var);
-	if (SvTYPE(var) < SVt_PVMG)
-		sv_upgrade(var, SVt_PVMG);
+	SvUPGRADE(var, SVt_PVMG);
 }
 
 static void* do_mapping(pTHX_ int id, int flags) {

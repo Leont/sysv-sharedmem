@@ -1,6 +1,7 @@
 Revision history for SysV-SharedMem
 
 {{$NEXT}}
+          Check for thinkfirst sv's properly
           Removed superfluous tests
 
 0.006     2011-09-10 10:28:36 Europe/Amsterdam
