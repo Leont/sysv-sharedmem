@@ -7,7 +7,7 @@ use warnings FATAL => 'all';
 use Carp qw/croak/;
 use Const::Fast;
 use IPC::SysV qw/ftok IPC_PRIVATE IPC_CREAT SHM_RDONLY/;
-use Sub::Exporter -setup => { exports => [qw/shared_open shared_remove shared_stat shared_chmod shared_chown/] };
+use Sub::Exporter::Progressive -setup => { exports => [qw/shared_open shared_remove shared_stat shared_chmod shared_chown/] };
 
 use XSLoader;
 
