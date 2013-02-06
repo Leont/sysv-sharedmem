@@ -23,7 +23,16 @@
 #	define SvPV_free(arg) sv_setpvn_mg(arg, NULL, 0);
 #endif
 
+#if PERL_VERSION >= 14
+#define find_magic(var) mg_findext(var, PERL_MAGIC_ext, &svsh_table)
+#define check_magic(magic, var) (magic = find_magic(var))
+#define unmagic(var) sv_unmagicext(var, PERL_MAGIC_ext, (MGVTBL*)&svsh_table)
+#else
+#define find_magic(var) mg_find(var, PERL_MAGIC_ext)
 #define SVSH_MAGIC_NUMBER 0x7368
+#define check_magic(magic, var) (magic = find_magic(var) && magic->mg_private == SVSH_MAGIC_NUMBER)
+#define unmagic(var) sv_unmagic(var, PERL_MAGIC_ext)
+#endif
 
 #ifndef SV_CHECK_THINKFIRST_COW_DROP
 #define SV_CHECK_THINKFIRST_COW_DROP(sv) SV_CHECK_THINKFIRST(sv)
@@ -185,8 +194,8 @@ static void check_new_variable(pTHX_ SV* var) {
 	SV_CHECK_THINKFIRST_COW_DROP(var);
 	if (SvREADONLY(var))
 		Perl_croak(aTHX_ "%s", PL_no_modify);
-	if (SvMAGICAL(var) && mg_find(var, PERL_MAGIC_uvar))
-		sv_unmagic(var, PERL_MAGIC_uvar);
+	if (SvMAGICAL(var) && find_magic(var))
+		unmagic(var);
 	if (SvROK(var))
 		sv_unref_flags(var, SV_IMMEDIATE_UNREF);
 	if (SvNIOK(var))
@@ -218,8 +227,10 @@ static struct svsh_info* initialize_svsh_info(int shmid, void* address, size_t l
 }
 
 static void add_magic(pTHX_ SV* var, struct svsh_info* magical, int writable) {
-	MAGIC* magic = sv_magicext(var, NULL, PERL_MAGIC_uvar, &svsh_table, (const char*) magical, 0);
+	MAGIC* magic = sv_magicext(var, NULL, PERL_MAGIC_ext, &svsh_table, (const char*) magical, 0);
+#ifdef SVSH_MAGIC_NUMBER
 	magic->mg_private = SVSH_MAGIC_NUMBER;
+#endif
 #ifdef MGf_LOCAL
 	magic->mg_flags |= MGf_LOCAL;
 #endif
@@ -232,7 +243,7 @@ static void add_magic(pTHX_ SV* var, struct svsh_info* magical, int writable) {
 
 static struct svsh_info* get_svsh_magic(pTHX_ SV* var, const char* funcname) {
 	MAGIC* magic;
-	if (!SvMAGICAL(var) || (magic = mg_find(var, PERL_MAGIC_uvar)) == NULL ||  magic->mg_private != SVSH_MAGIC_NUMBER)
+	if (!SvMAGICAL(var) || !check_magic(magic, var))
 		Perl_croak(aTHX_ "Could not %s: this variable is not a shared memory segment", funcname);
 	return (struct svsh_info*) magic->mg_ptr;
 }
