@@ -5,7 +5,6 @@ use strict;
 use warnings FATAL => 'all';
 
 use Carp qw/croak/;
-use Const::Fast;
 use IPC::SysV qw/ftok IPC_PRIVATE IPC_CREAT SHM_RDONLY/;
 use Sub::Exporter::Progressive -setup => { exports => [qw/shared_open shared_remove shared_stat shared_chmod shared_chown/] };
 
@@ -13,11 +12,18 @@ use XSLoader;
 
 XSLoader::load(__PACKAGE__, __PACKAGE__->VERSION);
 
-const my %flags_for => (
-	'<'  => SHM_RDONLY,
+my %get_flags_for = (
+	'<'  => 0,
 	'+<' => 0,
 	'>'  => 0 | IPC_CREAT,
 	'+>' => 0 | IPC_CREAT,
+);
+
+my %at_flags_for = (
+	'<'  => SHM_RDONLY,
+	'+<' => 0,
+	'>'  => 0,
+	'+>' => 0,
 );
 
 ## no critic (RequireArgUnpacking)
@@ -33,14 +39,14 @@ sub shared_open {
 		%other,
 	);
 	$mode = '<' if not defined $mode;
-	croak 'No such mode' if not exists $flags_for{$mode};
+	croak 'No such mode' if not exists $get_flags_for{$mode};
 	croak 'Zero length specified for shared memory segment' if $options{size} == 0;
 	my $key = defined $filename ? ftok($filename, $options{id}) : $options{key};
 	croak "Invalid key: $!" if not defined $key;
-	my $id = shmget $key, $options{size}, $flags_for{$mode} | $options{perms};
+	my $id = shmget $key, $options{size}, $get_flags_for{$mode} | $options{perms};
 	croak "Can't open shared memory object '$filename': $!" if not defined $id;
 
-	_shmat($_[0], $id, @options{qw/offset size/}, 0);
+	_shmat($_[0], $id, @options{qw/offset size/}, $at_flags_for{$mode});
 	return;
 }
 
