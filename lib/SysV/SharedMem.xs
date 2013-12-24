@@ -154,7 +154,7 @@ static int svsh_free(pTHX_ SV* var, MAGIC* magic) {
 		MUTEX_UNLOCK(&info->count_mutex);
 	}
 #else
-	if (munmap(info->real_address, info->real_length) == -1)
+	if (shmdt(info->real_address) == -1)
 		die_sys(aTHX_ "Could not detach shared memory segment: %s");
 	PerlMemShared_free(info);
 #endif 

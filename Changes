@@ -1,6 +1,7 @@
 Revision history for SysV-SharedMem
 
 {{$NEXT}}
+          Fix detaching on unthreaded perls
 
 0.008     2013-02-06 04:58:16 Europe/Amsterdam
           Handle COW/THINKFIRST properly
