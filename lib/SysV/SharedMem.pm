@@ -64,7 +64,9 @@ __END__
  vec($mem, 1, 16) = 34567;
  substr $mem, 45, 11, 'Hello World';
 
-This module maps shared memory into a variable that can be read just like any other variable, and it can be written to using standard Perl techniques such as regexps and C<substr>, B<as long as they don't change the length of the variable>.
+=head1 DESCRIPTION
+
+This module maps SysV shared memory into a variable that can be read just like any other variable, and it can be written to using standard Perl techniques such as regexps and C<substr>, B<as long as they don't change the length of the variable>.
 
 =func shared_open($var, $filename, $mode, %options)
 
