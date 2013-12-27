@@ -43,9 +43,9 @@ is($mmaped, scalar reverse($slurped), '$mmap is reversed');
 
 is(warnings { $mmaped = $mmaped }, 0, 'No warnings on self-assignment');
 
-like(exception { map_named my $var, 'some-nonexistant-file', '<', 1024 }, qr/Invalid key: No such file or directory at /, 'Can\'t map wth non-existant file as a key');
+like(exception { map_named my $var, 'some-nonexistant-file', '<', 1024 }, qr/Invalid filename for shared memory segment: /, 'Can\'t map wth non-existant file as a key');
 
-like(exception { map_named my $var, $0, '<', 1024 }, qr/Can't open shared memory object '[\w\/.-]+': No such file or directory/, 'Can\'t map wth non-existant file as a key');
+like(exception { map_named my $var, $0, '<', 1024 }, qr/Can't open shared memory object: No such file or directory/, 'Can\'t map wth non-existant file as a key');
 
 my @longer_warnings = warnings { $mmaped =~ s/(.)/$1$1/ };
 s/ at .*\n$// for @longer_warnings;
