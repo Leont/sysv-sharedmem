@@ -58,8 +58,6 @@ sub shared_open {
 
 1;    # End of SysV::SharedMem
 
-__END__
-
 # ABSTRACT: SysV Shared memory made easy
 
 =head1 SYNOPSIS
@@ -98,7 +96,7 @@ This determines the size of the map. Must be set if a new shared memory object i
 
 =item * perms
 
-This determines the permissions with which the segment is created (if $mode is '>' or '+>'). Default is 0600.
+This determines the permissions with which the segment is created (if C<$mode> is '>' or '+>'). Default is 0600.
 
 =item * offset
 
@@ -106,13 +104,13 @@ This determines the offset in the file that is mapped. Default is 0.
 
 =item * proj_id
 
-The project id, used to ensure the key generated from the filename is unique. Only the lower 8 bits are significant and may not be zero. Defaults to 1.
+The project id, used to ensure the key generated from C<$filename> is unique. Only the lower 8 bits are significant and may not be zero. Defaults to 1.
 
 =back
 
 =func shared_remove($var)
 
-Marks a memory object to be removed. Shared memory has kernel persisence so it has to be explicitly disposed of. One can still use the object after marking it for removal.
+Marks a memory object to be removed. Shared memory has kernel persistence so it has to be explicitly disposed of. One can still use the object after marking it for removal.
 
 =func shared_stat($var)
 
