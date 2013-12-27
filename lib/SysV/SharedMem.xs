@@ -212,8 +212,20 @@ static void* do_mapping(pTHX_ int id, int flags) {
 	return address;
 }
 
+static void _my_shmctl(pTHX_ int id, int op, struct shmid_ds* buffer, const char* format) {
+	int ret = shmctl(id, op, buffer);
+	if (ret != 0)
+		croak_sys(aTHX_ format);
+}
+
+#define my_shmctl(id, op, buffer, format) _my_shmctl(aTHX_ id, op, buffer, format)
 static struct svsh_info* initialize_svsh_info(int shmid, void* address, size_t length, ptrdiff_t correction) {
 	struct svsh_info* magical = PerlMemShared_malloc(sizeof *magical);
+	if (length == 0) {
+		struct shmid_ds buffer;
+		my_shmctl(shmid, IPC_STAT, &buffer, "Could not establish size of shared memory segment: %s");
+		length = buffer.shm_segsz;
+	}
 	magical->shmid        = shmid;
 	magical->real_address = address;
 	magical->fake_address = (char*)address + correction;
@@ -250,13 +262,6 @@ static struct svsh_info* get_svsh_magic(pTHX_ SV* var, const char* funcname) {
 
 #define SET_HASH(key, value) hv_store(hash, key, sizeof key - 1, newSViv(value), 0)
 
-void _my_shmctl(pTHX_ int id, int op, struct shmid_ds* buffer, const char* format) {
-	int ret = shmctl(id, op, buffer);
-	if (ret != 0)
-		croak_sys(aTHX_ format);
-}
-
-#define my_shmctl(id, op, buffer, format) _my_shmctl(aTHX_ id, op, buffer, format)
 
 MODULE = SysV::SharedMem				PACKAGE = SysV::SharedMem
 
@@ -269,13 +274,17 @@ _shmat(var, shmid, offset, length, flags)
 	ssize_t offset;
 	size_t length;
 	int flags;
+	PREINIT:
+		ptrdiff_t correction;
+		void* address;
+		struct svsh_info* magical;
 	CODE:
 		check_new_variable(aTHX_ var);
 		
-		ptrdiff_t correction = offset % page_size();
-		void* address = do_mapping(aTHX_ shmid, flags);
+		correction = offset % page_size();
+		address = do_mapping(aTHX_ shmid, flags);
 		
-		struct svsh_info* magical = initialize_svsh_info(shmid, address, length, correction);
+		magical = initialize_svsh_info(shmid, address, length, correction);
 		reset_var(var, magical);
 		add_magic(aTHX_ var, magical, 1);
 

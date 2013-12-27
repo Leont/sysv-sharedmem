@@ -46,9 +46,9 @@ sub shared_open {
 	);
 	$mode = '<' if not defined $mode;
 	croak 'No such mode' if not exists $at_flags_for{$mode};
-	my $id = $options{shm_id} || do {
+	my $id = $options{id} || do {
 		my $key = _get_key($filename, $mode, %options);
-		croak 'Zero length specified for shared memory segment' if $options{size} == 0 and ($get_flags_for{$mode} & IPC_CREAT or $key == IPC_PRIVATE);
+		croak 'Zero length specified for shared memory segment' if $options{size} == 0 && ($get_flags_for{$mode} & IPC_CREAT || $key == IPC_PRIVATE);
 		shmget $key, $options{size}, $get_flags_for{$mode} | $options{perms} or croak "Can't open shared memory object: $!";
 	};
 
