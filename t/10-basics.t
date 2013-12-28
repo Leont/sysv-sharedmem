@@ -2,13 +2,13 @@
 
 use strict;
 use warnings;
-use SysV::SharedMem qw/shared_open shared_remove shared_stat shared_chmod/;
-use Test::More tests => 10;
+use SysV::SharedMem -all;
+use Test::More;
 use Test::Fatal;
 use Test::Warnings;
 
 my $map;
-is(exception { shared_open $map, $0, '+>', size => 300, id => 2 }, undef, "can open file '/name'");
+is(exception { shared_open $map, $0, '+>', size => 300, proj_id => 2 }, undef, "can open file '/name'");
 
 {
 	local $SIG{SEGV} = sub { die "Got SEGFAULT\n" };
@@ -29,3 +29,6 @@ is shared_stat($map)->{mode} & 0777, 0600;
 
 is(exception { shared_remove $map }, undef, "Can unlink '/name'");
 
+is(exception { shared_open my $copy, undef, '+<', id => shared_identifier($map) }, undef, 'Can reopen segment');
+
+done_testing();

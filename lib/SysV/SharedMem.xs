@@ -355,3 +355,18 @@ shared_remove(var)
 	int shmid;
 	CODE:
 		my_shmctl(get_shmid(var, "shared_remove"), IPC_RMID, NULL, "Could not shared_remove: %s");
+
+void
+shared_detach(var)
+	SV* var;
+	CODE:
+		get_svsh_magic(aTHX_ var, "shared_detach");
+		unmagic(var);
+
+IV
+shared_identifier(var)
+	SV* var;
+	CODE:
+		RETVAL = get_shmid(var, "shared_identifier");
+	OUTPUT:
+		RETVAL

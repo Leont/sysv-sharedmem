@@ -6,7 +6,7 @@ use warnings FATAL => 'all';
 
 use Carp qw/croak/;
 use IPC::SysV qw/ftok IPC_PRIVATE IPC_CREAT SHM_RDONLY/;
-use Sub::Exporter::Progressive -setup => { exports => [qw/shared_open shared_remove shared_stat shared_chmod shared_chown/] };
+use Sub::Exporter::Progressive -setup => { exports => [qw/shared_open shared_remove shared_stat shared_chmod shared_chown shared_detach shared_identifier/] };
 
 use XSLoader;
 
@@ -175,5 +175,13 @@ Change the (lower 9) modebits of the shared memory object.
 =func shared_chown($var, $uid, $gid = undef)
 
 Change the owning uid and optionally gid of the shared memory object.
+
+=func shared_detach($var)
+
+Detach the shared memory segment from this variable.
+
+=func shared_identifier
+
+Return the identifier for this shared memory segment
 
 =cut
