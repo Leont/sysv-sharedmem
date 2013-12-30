@@ -1,6 +1,8 @@
 Revision history for SysV-SharedMem
 
 {{$NEXT}}
+
+0.009     2013-12-30 13:14:35 Europe/Amsterdam
           *Backwards incompatible change*: new id option is a shm_id, not a proj_id. This also affects the order of precedence.
           Allow detection of size of shared memory segment
           Add shared_detach and shared_identifier
