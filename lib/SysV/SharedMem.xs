@@ -10,6 +10,7 @@
 #include <sys/shm.h>
 
 #define PERL_NO_GET_CONTEXT
+#define PERL_REENTR_API 1
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
@@ -58,27 +59,7 @@ static size_t page_size() {
 	return pagesize;
 }
 
-static void get_sys_error(char* buffer, size_t buffer_size) {
-#if _POSIX_VERSION >= 200112L
-#	ifdef GNU_STRERROR_R
-	const char* message = strerror_r(errno, buffer, buffer_size);
-	if (message != buffer)
-		memcpy(buffer, message, buffer_size);
-#	else
-	strerror_r(errno, buffer, buffer_size);
-#	endif
-#else
-	const char* message = strerror(errno);
-	strncpy(buffer, message, buffer_size - 1);
-	buffer[buffer_size - 1] = '\0';
-#endif
-}
-
-static void die_sys(pTHX_ const char* format) {
-	char buffer[128];
-	get_sys_error(buffer, sizeof buffer);
-	Perl_croak(aTHX_ format, buffer);
-}
+#define die_sys(format) Perl_croak(aTHX_ format, strerror(errno))
 
 static void real_croak_sv(pTHX_ SV* value) {
 	dSP;
@@ -88,13 +69,7 @@ static void real_croak_sv(pTHX_ SV* value) {
 	call_pv("Carp::croak", G_VOID | G_DISCARD);
 }
 
-static void croak_sys(pTHX_ const char* format) {
-	char buffer[128];
-	SV* tmp;
-	get_sys_error(buffer, sizeof buffer);
-	tmp = sv_2mortal(newSVpvf(format, buffer, NULL));
-	real_croak_sv(aTHX_ tmp);
-}
+#define croak_sys(format) real_croak_sv(aTHX_ sv_2mortal(newSVpvf(format, strerror(errno))))
 
 static void reset_var(SV* var, struct svsh_info* info) {
 	SvPVX(var) = info->fake_address;
@@ -145,7 +120,7 @@ static int svsh_free(pTHX_ SV* var, MAGIC* magic) {
 	MUTEX_LOCK(&info->count_mutex);
 	if (--info->count == 0) {
 		if (shmdt(info->real_address) == -1)
-			die_sys(aTHX_ "Could not detach shared memory segment: %s");
+			die_sys("Could not detach shared memory segment: %s");
 		MUTEX_UNLOCK(&info->count_mutex);
 		MUTEX_DESTROY(&info->count_mutex);
 		PerlMemShared_free(info);
@@ -155,7 +130,7 @@ static int svsh_free(pTHX_ SV* var, MAGIC* magic) {
 	}
 #else
 	if (shmdt(info->real_address) == -1)
-		die_sys(aTHX_ "Could not detach shared memory segment: %s");
+		die_sys("Could not detach shared memory segment: %s");
 	PerlMemShared_free(info);
 #endif 
 	SvREADONLY_off(var);
@@ -208,14 +183,14 @@ static void check_new_variable(pTHX_ SV* var) {
 static void* do_mapping(pTHX_ int id, int flags) {
 	void* address = shmat(id, NULL, flags);
 	if (address == (void*)-1)
-		croak_sys(aTHX_ "Could not attach: %s");
+		croak_sys("Could not attach: %s");
 	return address;
 }
 
 static void _my_shmctl(pTHX_ int id, int op, struct shmid_ds* buffer, const char* format) {
 	int ret = shmctl(id, op, buffer);
 	if (ret != 0)
-		croak_sys(aTHX_ format);
+		die_sys(format);
 }
 
 #define my_shmctl(id, op, buffer, format) _my_shmctl(aTHX_ id, op, buffer, format)
