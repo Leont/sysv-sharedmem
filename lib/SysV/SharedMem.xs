@@ -219,7 +219,7 @@ static void _my_shmctl(pTHX_ int id, int op, struct shmid_ds* buffer, const char
 }
 
 #define my_shmctl(id, op, buffer, format) _my_shmctl(aTHX_ id, op, buffer, format)
-static struct svsh_info* initialize_svsh_info(int shmid, void* address, size_t length, ptrdiff_t correction) {
+static struct svsh_info* S_initialize_svsh_info(pTHX_ int shmid, void* address, size_t length, ptrdiff_t correction) {
 	struct svsh_info* magical = PerlMemShared_malloc(sizeof *magical);
 	if (length == 0) {
 		struct shmid_ds buffer;
@@ -237,6 +237,7 @@ static struct svsh_info* initialize_svsh_info(int shmid, void* address, size_t l
 #endif
 	return magical;
 }
+#define initialize_svsh_info(shmid, address, length, correction) S_initialize_svsh_info(aTHX_ shmid, address, length, correction)
 
 static void add_magic(pTHX_ SV* var, struct svsh_info* magical, int writable) {
 	MAGIC* magic = sv_magicext(var, NULL, PERL_MAGIC_ext, &svsh_table, (const char*) magical, 0);
