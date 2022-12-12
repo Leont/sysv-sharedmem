@@ -1,6 +1,7 @@
 Revision history for SysV-SharedMem
 
 {{$NEXT}}
+          - Fix failing test
 
 0.010     2014-05-15 12:03:34 Europe/Amsterdam
           Add missing interpeter pointer on threaded perls
